@@ -24,4 +24,11 @@ foreach ($item in $items) {
     $shortcut.Save()
 }
 
-Write-Output "Installed desktop shortcuts: Keyboard Black, Keyboard White"
+$startupKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+New-Item -Path $startupKey -Force | Out-Null
+Set-ItemProperty -Path $startupKey -Name 'AmirRazerLightingSwitch' -Value ('"' + $exe + '" startup')
+
+Get-Process -Name 'RazerLightingSwitch' -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Process -FilePath $exe -ArgumentList 'startup' -WindowStyle Hidden
+
+Write-Output "Installed desktop shortcuts plus tray startup: Keyboard Black, Keyboard White"
