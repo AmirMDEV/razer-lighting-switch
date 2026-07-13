@@ -30,14 +30,20 @@ internal sealed class TrayAppContext : ApplicationContext
         menu.Items.Add("RGB wheel    Ctrl+Alt+L", null, (_, _) => ShowPicker());
         menu.Items.Add(new ToolStripSeparator());
         _startupItem = new ToolStripMenuItem("Start with Windows") { Checked = IsStartupEnabled(), CheckOnClick = true };
-        _startupItem.CheckedChanged += (_, _) => SetStartup(_startupItem.Checked);
+        _picker.StartupChanged += (_, enabled) => _startupItem.Checked = enabled;
+        _startupItem.CheckedChanged += (_, _) =>
+        {
+            SetStartup(_startupItem.Checked);
+            _picker.SetStartupState(_startupItem.Checked);
+        };
+        _picker.SetStartupState(_startupItem.Checked);
         menu.Items.Add(_startupItem);
         menu.Items.Add("Exit", null, (_, _) => ExitThread());
 
         _tray = new NotifyIcon
         {
             Icon = LoadTrayIcon(),
-            Text = "Razer Lighting",
+            Text = AppPaths.ProductName,
             Visible = true,
             ContextMenuStrip = menu
         };
@@ -159,7 +165,8 @@ internal sealed class TrayAppContext : ApplicationContext
     private static Icon LoadTrayIcon()
     {
         var iconPath = Path.Combine(AppContext.BaseDirectory, "assets", "keyboard-white.ico");
-        return File.Exists(iconPath) ? new Icon(iconPath) : SystemIcons.Application;
+        if (File.Exists(iconPath)) return new Icon(iconPath);
+        return Icon.ExtractAssociatedIcon(Environment.ProcessPath ?? string.Empty) ?? SystemIcons.Application;
     }
 
     protected override void ExitThreadCore()

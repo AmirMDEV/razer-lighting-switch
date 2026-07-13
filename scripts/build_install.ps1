@@ -6,8 +6,10 @@ $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $publish = Join-Path $repo 'publish'
 
-Get-Process -Name 'RazerLightingSwitch' -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process -Name 'RazerLightingSwitch','RazorLightweightKeyboardLightingControl' -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Milliseconds 400
+$oldExe = Join-Path $publish 'RazerLightingSwitch.exe'
+if (Test-Path -LiteralPath $oldExe) { Remove-Item -LiteralPath $oldExe -Force }
 
 & dotnet publish (Join-Path $repo 'RazerLightingSwitch.csproj') -c $Configuration -o $publish
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed with exit code $LASTEXITCODE" }

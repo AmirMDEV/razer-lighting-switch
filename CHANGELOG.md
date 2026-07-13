@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 - 2026-07-13
+
+- Renamed public product to Razor Lightweight Keyboard Lighting Control
+- Added visible Start with Windows checkbox to RGB popup
+- Added Built by Amir footer Follow Amir link and Donate button
+- Added embedded executable icon fallback for portable public use
+- Added compressed self-contained Windows x64 release build
+- Added release packaging script SHA-256 proof and MIT license
+- Increased bounded cold Chroma request timeout after live public-name registration exceeded 3 seconds
+
 ## 1.1.0 - 2026-07-13
 
 - Added lightweight system tray controller with compact RGB wheel and brightness slider

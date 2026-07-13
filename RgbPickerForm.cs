@@ -10,21 +10,28 @@ internal sealed class RgbPickerForm : Form
     private readonly Label _value;
     private readonly Label _brightnessLabel;
     private readonly Panel _preview;
+    private readonly CheckBox _startup;
+    private readonly Panel _footerLine;
+    private readonly Label _builtBy;
+    private readonly LinkLabel _follow;
+    private readonly Button _donate;
     private readonly System.Windows.Forms.Timer _commitTimer;
     private Color _selectedColor;
     private bool _keepOpen;
+    private bool _updatingStartup;
 
     internal event EventHandler<ColorCommittedEventArgs>? ColorCommitted;
+    internal event EventHandler<bool>? StartupChanged;
 
     internal RgbPickerForm(AppSettings settings)
     {
-        Text = "Razer Lighting";
+        Text = AppPaths.ProductName;
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         MinimizeBox = false;
         ShowInTaskbar = false;
         TopMost = true;
-        ClientSize = new Size(258, 318);
+        ClientSize = new Size(258, 394);
         Padding = new Padding(14);
         Font = new Font("Segoe UI", 9f);
 
@@ -47,7 +54,42 @@ internal sealed class RgbPickerForm : Form
         _value = new Label { AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Location = new Point(214, 240), Size = new Size(32, 20) };
         _preview = new Panel { Location = new Point(14, 280), Size = new Size(230, 22), AccessibleName = "Selected keyboard color" };
 
-        Controls.AddRange([_wheel, _brightnessLabel, _brightness, _value, _preview]);
+        _startup = new CheckBox
+        {
+            Text = "Start with Windows",
+            AutoSize = true,
+            Checked = settings.StartWithWindows,
+            Location = new Point(14, 312),
+            AccessibleName = "Start with Windows"
+        };
+        _startup.CheckedChanged += (_, _) =>
+        {
+            if (!_updatingStartup) StartupChanged?.Invoke(this, _startup.Checked);
+        };
+
+        _footerLine = new Panel { Location = new Point(14, 340), Size = new Size(230, 1) };
+        _builtBy = new Label { Text = "Built by Amir", AutoSize = true, Location = new Point(14, 349) };
+        _follow = new LinkLabel
+        {
+            Text = "followamir.com",
+            AutoSize = true,
+            Location = new Point(14, 369),
+            AccessibleName = "Follow Amir"
+        };
+        _follow.LinkClicked += (_, _) => OpenUrl(AppPaths.FollowUrl, "Follow Amir");
+        _donate = new Button
+        {
+            Text = "Donate",
+            FlatStyle = FlatStyle.Flat,
+            Location = new Point(174, 350),
+            Size = new Size(70, 30),
+            AccessibleName = "Donate to Amir",
+            TabStop = true
+        };
+        _donate.FlatAppearance.BorderSize = 1;
+        _donate.Click += (_, _) => OpenUrl(AppPaths.DonateUrl, "Donate");
+
+        Controls.AddRange([_wheel, _brightnessLabel, _brightness, _value, _preview, _startup, _footerLine, _builtBy, _follow, _donate]);
         _commitTimer = new System.Windows.Forms.Timer { Interval = 65 };
         _commitTimer.Tick += (_, _) =>
         {
@@ -66,6 +108,13 @@ internal sealed class RgbPickerForm : Form
         _brightness.Value = Math.Clamp(brightness, 1, 100);
         _wheel.SetColor(color);
         UpdatePreview();
+    }
+
+    internal void SetStartupState(bool enabled)
+    {
+        _updatingStartup = true;
+        _startup.Checked = enabled;
+        _updatingStartup = false;
     }
 
     internal void ShowNearTray(bool keepOpenForTest = false)
@@ -87,6 +136,14 @@ internal sealed class RgbPickerForm : Form
         _brightnessLabel.ForeColor = foreground;
         _value.ForeColor = foreground;
         _wheel.BackColor = background;
+        _startup.ForeColor = foreground;
+        _footerLine.BackColor = light ? Color.FromArgb(216, 222, 226) : Color.FromArgb(58, 66, 77);
+        _builtBy.ForeColor = foreground;
+        _follow.LinkColor = light ? Color.FromArgb(48, 64, 80) : Color.FromArgb(230, 241, 248);
+        _follow.ActiveLinkColor = light ? Color.FromArgb(13, 27, 42) : Color.White;
+        _donate.BackColor = Color.FromArgb(201, 184, 143);
+        _donate.ForeColor = Color.FromArgb(13, 27, 42);
+        _donate.FlatAppearance.BorderColor = light ? Color.FromArgb(159, 143, 106) : Color.FromArgb(229, 214, 177);
         var dark = light ? 0 : 1;
         if (IsHandleCreated) DwmSetWindowAttribute(Handle, 20, ref dark, sizeof(int));
         Invalidate(true);
@@ -112,6 +169,17 @@ internal sealed class RgbPickerForm : Form
     {
         using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
         return (key?.GetValue("AppsUseLightTheme") as int? ?? 1) != 0;
+    }
+
+    private static void OpenUrl(string url, string label)
+    {
+        try
+        {
+            AppPaths.Log($"{label} opened: {url}");
+            if (File.Exists(AppPaths.SuppressExternalLaunchPath)) return;
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch (Exception ex) { AppPaths.Log($"{label} failed: {ex.Message}"); }
     }
 
     [DllImport("dwmapi.dll")]

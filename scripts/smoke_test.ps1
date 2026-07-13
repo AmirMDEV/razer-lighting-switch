@@ -3,28 +3,28 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$exe = Join-Path $PublishDirectory 'RazerLightingSwitch.exe'
+$exe = Join-Path $PublishDirectory 'RazorLightweightKeyboardLightingControl.exe'
 $log = Join-Path $env:LOCALAPPDATA 'Amir\RazerLightingSwitch\controller.log'
 $desktop = [Environment]::GetFolderPath('Desktop')
 $blackShortcut = Join-Path $desktop 'Keyboard Black.lnk'
 $whiteShortcut = Join-Path $desktop 'Keyboard White.lnk'
 
-Get-Process -Name 'RazerLightingSwitch' -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process -Name 'RazerLightingSwitch','RazorLightweightKeyboardLightingControl' -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Milliseconds 500
 Remove-Item -LiteralPath $log -Force -ErrorAction SilentlyContinue
 
 $hostStart = [Diagnostics.Stopwatch]::StartNew()
 Start-Process -FilePath $blackShortcut
 while (-not (Test-Path -LiteralPath $log)) {
-    if ($hostStart.Elapsed.TotalSeconds -gt 5) { throw 'Controller did not create its log within 5 seconds' }
+    if ($hostStart.Elapsed.TotalSeconds -gt 12) { throw 'Controller did not create its log within 12 seconds' }
     Start-Sleep -Milliseconds 50
 }
 while ((Get-Content -LiteralPath $log -Raw) -notmatch 'Applied black') {
-    if ($hostStart.Elapsed.TotalSeconds -gt 5) { throw 'Black state did not apply within 5 seconds' }
+    if ($hostStart.Elapsed.TotalSeconds -gt 12) { throw 'Black state did not apply within 12 seconds' }
     Start-Sleep -Milliseconds 50
 }
 $hostStart.Stop()
-$hostProcess = Get-Process -Name 'RazerLightingSwitch' | Select-Object -First 1
+$hostProcess = Get-Process -Name 'RazorLightweightKeyboardLightingControl' | Select-Object -First 1
 
 $switchTimes = @{}
 foreach ($state in @('white', 'black', 'white')) {

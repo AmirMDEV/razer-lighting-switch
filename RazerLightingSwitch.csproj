@@ -6,11 +6,17 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <AssemblyName>RazerLightingSwitch</AssemblyName>
+    <AssemblyName>RazorLightweightKeyboardLightingControl</AssemblyName>
     <RootNamespace>RazerLightingSwitch</RootNamespace>
     <ApplicationIcon>assets\keyboard-white.ico</ApplicationIcon>
+    <Version>1.2.0</Version>
+    <AssemblyTitle>Razor Lightweight Keyboard Lighting Control</AssemblyTitle>
+    <Product>Razor Lightweight Keyboard Lighting Control</Product>
+    <Company>Amir Mansaray</Company>
+    <Description>Lightweight Razer Chroma keyboard lighting controls for Windows</Description>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="assets\keyboard-black.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

@@ -7,7 +7,7 @@ internal sealed class ChromaClient : IDisposable
 {
     private static readonly Uri RegistrationUri = new("http://localhost:54235/razer/chromasdk");
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
-    private readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(3) };
+    private readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(8) };
     private readonly Action<string> _log;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private Uri? _sessionUri;
@@ -20,7 +20,7 @@ internal sealed class ChromaClient : IDisposable
         {
             var app = new
             {
-                title = "Amir Razer Lighting Switch",
+                title = AppPaths.ProductName,
                 description = "Instant keyboard lighting tray utility",
                 author = new { name = "Amir Mansaray", contact = "followamir.com" },
                 device_supported = new[] { "keyboard" },
