@@ -9,6 +9,8 @@
 - Added compressed self-contained Windows x64 release build
 - Added release packaging script SHA-256 proof and MIT license
 - Increased bounded cold Chroma request timeout after live public-name registration exceeded 3 seconds
+- Refreshed public copy around full RGB customization and global hotkeys
+- Added a real software screenshot to the public README
 
 ## 1.1.0 - 2026-07-13
 

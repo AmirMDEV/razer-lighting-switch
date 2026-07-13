@@ -1,6 +1,18 @@
 # Razor Lightweight Keyboard Lighting Control
 
-Tiny Windows tray utility for instant Razer Chroma keyboard lighting control.
+Tiny Windows tray utility for fully customizable Razer Chroma RGB keyboard lighting. Pick any colour, adjust brightness, switch presets, or use global hotkeys without opening Synapse.
+
+![Razor Lightweight Keyboard Lighting Control RGB wheel, brightness, startup, and Donate controls](docs/images/razor-lightweight-keyboard-lighting-control.png)
+
+## Features
+
+- Full RGB colour wheel for custom keyboard lighting
+- Brightness control from 0% to 100%
+- Global hotkeys for black, white, and RGB controls
+- Fast black and white presets
+- Tiny system tray footprint
+- Optional `Start with Windows` checkbox
+- Light and dark themes
 
 ## Download
 
@@ -8,7 +20,7 @@ Download the standalone Windows x64 EXE from [GitHub Releases](https://github.co
 
 Requires Windows x64 plus Razer Synapse with Chroma Connect available.
 
-## Controls
+## Hotkeys and controls
 
 - Left-click the tray icon for the RGB wheel and brightness slider
 - Tick or untick `Start with Windows` inside the popup
