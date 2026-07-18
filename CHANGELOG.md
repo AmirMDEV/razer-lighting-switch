@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 - 2026-07-18
+
+- Made the Windows startup launch wait briefly and retry when the Razer Chroma service has not finished starting yet.
+- Kept manual launches immediate, with no background retry loop after the tray controller is running.
+
 ## 1.2.0 - 2026-07-13
 
 - Renamed public product to Razor Lightweight Keyboard Lighting Control

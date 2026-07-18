@@ -12,7 +12,7 @@
     <AssemblyName>RazorLightweightKeyboardLightingControl</AssemblyName>
     <RootNamespace>RazerLightingSwitch</RootNamespace>
     <ApplicationIcon>assets\keyboard-white.ico</ApplicationIcon>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <AssemblyTitle>Razor Lightweight Keyboard Lighting Control</AssemblyTitle>
     <Product>Razor Lightweight Keyboard Lighting Control</Product>
     <Company>Amir Mansaray</Company>

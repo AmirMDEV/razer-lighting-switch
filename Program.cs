@@ -6,6 +6,8 @@ internal static class Program
 {
     internal const string MutexName = "Local\\Amir.RazerLightingSwitch.Host";
     internal const string PipeName = "Amir.RazerLightingSwitch.Commands";
+    private const int StartupConnectionAttempts = 6;
+    private static readonly TimeSpan StartupRetryDelay = TimeSpan.FromSeconds(5);
 
     [STAThread]
     private static void Main(string[] args)
@@ -23,7 +25,7 @@ internal static class Program
         ApplicationConfiguration.Initialize();
         using var lifetime = new CancellationTokenSource();
         using var chroma = new ChromaClient(AppPaths.Log);
-        if (!chroma.ConnectAsync(lifetime.Token).GetAwaiter().GetResult()) return;
+        if (!ConnectForLaunchAsync(chroma, command == "startup", lifetime.Token).GetAwaiter().GetResult()) return;
 
         var settings = AppSettings.Load();
         var initialCommand = command is "black" or "white" ? command : settings.LastMode;
@@ -39,6 +41,21 @@ internal static class Program
         lifetime.Cancel();
         IgnoreCancellation(heartbeat).GetAwaiter().GetResult();
         IgnoreCancellation(pipe).GetAwaiter().GetResult();
+    }
+
+    private static async Task<bool> ConnectForLaunchAsync(ChromaClient chroma, bool isStartupLaunch, CancellationToken token)
+    {
+        var attempts = isStartupLaunch ? StartupConnectionAttempts : 1;
+        for (var attempt = 1; attempt <= attempts; attempt++)
+        {
+            if (await chroma.ConnectAsync(token)) return true;
+            if (attempt == attempts) break;
+
+            AppPaths.Log($"Chroma was not ready at startup; retrying in {StartupRetryDelay.TotalSeconds:0}s ({attempt}/{attempts})");
+            await Task.Delay(StartupRetryDelay, token);
+        }
+
+        return false;
     }
 
     private static string? ParseCommand(string[] args)
