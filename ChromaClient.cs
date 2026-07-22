@@ -43,7 +43,7 @@ internal sealed class ChromaClient : IDisposable
 
     internal Task<bool> ApplyCommandAsync(string command, AppSettings settings, CancellationToken token) =>
         command == "black"
-            ? ApplyEffectAsync("black", new { effect = "CHROMA_NONE" }, token)
+            ? ApplyColorAsync(Color.Black, 100, "black", token)
             : command == "white"
                 ? ApplyColorAsync(Color.White, 100, "white", token)
                 : ApplyColorAsync(settings.BaseColor, settings.Brightness, "rgb", token);

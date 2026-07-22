@@ -6,7 +6,7 @@ internal static class Program
 {
     internal const string MutexName = "Local\\Amir.RazerLightingSwitch.Host";
     internal const string PipeName = "Amir.RazerLightingSwitch.Commands";
-    private const int StartupConnectionAttempts = 6;
+    private static readonly TimeSpan StartupConnectionRetryWindow = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan StartupRetryDelay = TimeSpan.FromSeconds(5);
 
     [STAThread]
@@ -45,17 +45,20 @@ internal static class Program
 
     private static async Task<bool> ConnectForLaunchAsync(ChromaClient chroma, bool isStartupLaunch, CancellationToken token)
     {
-        var attempts = isStartupLaunch ? StartupConnectionAttempts : 1;
-        for (var attempt = 1; attempt <= attempts; attempt++)
+        var retryWindow = System.Diagnostics.Stopwatch.StartNew();
+        for (var attempt = 1; ; attempt++)
         {
             if (await chroma.ConnectAsync(token)) return true;
-            if (attempt == attempts) break;
+            if (!isStartupLaunch) return false;
+            if (retryWindow.Elapsed >= StartupConnectionRetryWindow)
+            {
+                AppPaths.Log($"Chroma did not become ready within {StartupConnectionRetryWindow.TotalMinutes:0} minutes after Windows startup");
+                return false;
+            }
 
-            AppPaths.Log($"Chroma was not ready at startup; retrying in {StartupRetryDelay.TotalSeconds:0}s ({attempt}/{attempts})");
+            AppPaths.Log($"Chroma was not ready at startup; retrying in {StartupRetryDelay.TotalSeconds:0}s (attempt {attempt}; up to {StartupConnectionRetryWindow.TotalMinutes:0} minutes)");
             await Task.Delay(StartupRetryDelay, token);
         }
-
-        return false;
     }
 
     private static string? ParseCommand(string[] args)

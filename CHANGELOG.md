@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fixed Black to send a real static black Chroma effect instead of clearing the effect and allowing Razer's rainbow default to resume.
+- Black now persists as black at 100% brightness, so the next startup restores the requested state.
+- Extended the hidden startup controller retry window to five minutes while Chroma services finish loading.
+
 ## 1.2.1 - 2026-07-18
 
 - Made the Windows startup launch wait briefly and retry when the Razer Chroma service has not finished starting yet.

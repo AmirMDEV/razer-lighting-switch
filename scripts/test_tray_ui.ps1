@@ -27,6 +27,8 @@ public static class TrayNative {
   [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdc, uint flags);
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hwnd, int command);
   [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr hwnd, StringBuilder text, int maxCount);
+  [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern int GetClassName(IntPtr hwnd, StringBuilder text, int maxCount);
+  [DllImport("user32.dll")] public static extern IntPtr SetFocus(IntPtr hwnd);
   [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
 }
 '@
@@ -94,23 +96,36 @@ foreach ($child in $children) {
 if ($wheel -eq [IntPtr]::Zero) { throw 'RGB wheel child control missing' }
 $startupCheckbox = [IntPtr]::Zero
 $donateButton = [IntPtr]::Zero
+$brightnessSlider = [IntPtr]::Zero
+$childClasses = @()
 foreach ($child in $children) {
     $text = New-Object Text.StringBuilder 128
     [TrayNative]::GetWindowText($child, $text, $text.Capacity) | Out-Null
+    $className = New-Object Text.StringBuilder 128
+    [TrayNative]::GetClassName($child, $className, $className.Capacity) | Out-Null
+    $childClasses += $className.ToString()
     if ($text.ToString() -eq 'Start with Windows') { $startupCheckbox = $child }
     if ($text.ToString() -eq 'Donate') { $donateButton = $child }
+    if ($className.ToString() -like '*msctls_trackbar32*') { $brightnessSlider = $child }
 }
 if ($startupCheckbox -eq [IntPtr]::Zero) { throw 'Startup checkbox missing' }
 if ($donateButton -eq [IntPtr]::Zero) { throw 'Donate button missing' }
+if ($brightnessSlider -eq [IntPtr]::Zero) { throw "Brightness slider missing. Found classes: $($childClasses -join ', ')" }
 $beforeWheel = @(Get-Content -LiteralPath $log).Count
 $point = [IntPtr]((107 -shl 16) -bor 205)
 [TrayNative]::PostMessage($wheel, 0x0201, [IntPtr]1, $point) | Out-Null
 [TrayNative]::PostMessage($wheel, 0x0202, [IntPtr]0, $point) | Out-Null
 Wait-Log 'Applied rgb' $beforeWheel
 
-Invoke-Command 'rgb:3366CC:42' 'Applied rgb'
+$beforeBrightness = @(Get-Content -LiteralPath $log).Count
+[TrayNative]::SetFocus($brightnessSlider) | Out-Null
+for ($i = 0; $i -lt 58; $i++) {
+    [TrayNative]::SendMessage($brightnessSlider, 0x0100, [IntPtr]0x25, [IntPtr]::Zero) | Out-Null
+    [TrayNative]::SendMessage($brightnessSlider, 0x0101, [IntPtr]0x25, [IntPtr]::Zero) | Out-Null
+}
+Wait-Log 'Applied rgb' $beforeBrightness
 $settings = Get-Content -LiteralPath $settingsPath -Raw | ConvertFrom-Json
-if ($settings.Brightness -ne 42) { throw 'Brightness persistence failed' }
+if ($settings.Brightness -ne 42) { throw "Brightness slider persistence failed: $($settings.Brightness)" }
 
 $existingRun = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -ErrorAction SilentlyContinue).AmirRazerLightingSwitch
 if ($null -eq $existingRun) { Invoke-Command 'startup-on' 'Startup enabled' }

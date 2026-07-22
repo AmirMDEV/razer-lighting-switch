@@ -108,11 +108,11 @@ internal sealed class TrayAppContext : ApplicationContext
         if (await _chroma.ApplyCommandAsync(command, _settings, _lifetime.Token))
         {
             _settings.LastMode = command;
-            if (command == "white")
+            if (command is "black" or "white")
             {
-                _settings.ColorArgb = Color.White.ToArgb();
+                _settings.ColorArgb = command == "black" ? Color.Black.ToArgb() : Color.White.ToArgb();
                 _settings.Brightness = 100;
-                _picker.SetColor(Color.White, 100);
+                _picker.SetColor(command == "black" ? Color.Black : Color.White, 100);
             }
             _settings.Save();
             _tray.Text = command == "black" ? "Razer Lighting - Black" : "Razer Lighting - White";
